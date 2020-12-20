@@ -1,21 +1,56 @@
-import { StatusBar } from 'expo-status-bar';
-import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import React, { Component } from 'react';
+import { Renderer } from 'expo-three';
+import { GLView } from 'expo-gl';
+import { GridHelper, PerspectiveCamera, Scene } from 'three';
 
-export default function App() {
-  return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
-  );
+class Canvas extends Component {
+  animate = () => {
+    this._grid.rotation.z += 0.01;
+    this.renderer.render(this.scene, this.camera);
+    requestAnimationFrame(this.animate);
+    this._gl.endFrameEXP();
+  }
+
+  _onContextCreate = async (gl) => {
+    const { drawingBufferWidth: width, drawingBufferHeight: height } = gl;
+    const sceneColor = 0x10505b;
+
+    const renderer = new Renderer({ gl });
+    renderer.setSize(width, height);
+    renderer.setClearColor(sceneColor);
+
+    const camera = new PerspectiveCamera(80, width / height, 0.01, 1000);
+    camera.position.set(2, 5, 5);
+
+    const scene = new Scene();
+    this._grid = new GridHelper(10, 10);
+    scene.add(this._grid);
+    this._start = 0;
+
+    renderer.render(scene, camera);
+
+    this.scene = scene;
+    this.camera = camera;
+    this.renderer = renderer;
+
+    this._gl = gl;
+
+    this.animate();
+    gl.endFrameEXP();
+  }
+
+  render() {
+    return (
+      <GLView
+        style={{ flex: 1 }}
+        onContextCreate={this._onContextCreate}
+      />
+    );
+  }
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+export default function App () {
+  return (
+    <Canvas />
+  );
+}
