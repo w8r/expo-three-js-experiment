@@ -8,6 +8,9 @@ class Canvas {
   private gl: ExpoWebGLRenderingContext;
   private renderer: THREE.WebGLRenderer;
   private scene: THREE.Scene;
+  private camera: THREE.PerspectiveCamera;
+
+  private frameTimer = 0;
 
   constructor(gl: ExpoWebGLRenderingContext) {
     this.gl = gl;
@@ -17,17 +20,39 @@ class Canvas {
 
     const renderer = (this.renderer = new Renderer({ gl }));
     const scene = (this.scene = new THREE.Scene());
-    const camera = new THREE.PerspectiveCamera(80, width / height, 0.01, 1000);
+    const camera = (this.camera = new THREE.PerspectiveCamera(
+      80,
+      width / height,
+      0.01,
+      1000
+    ));
 
     renderer.setSize(width, height);
     renderer.setClearColor(sceneColor);
-
     camera.position.set(2, 5, 5);
 
     renderer.render(scene, camera);
 
     gl.endFrameEXP();
+    this.start();
   }
+
+  start() {
+    this.frame();
+  }
+
+  stop() {
+    cancelAnimationFrame(this.frameTimer);
+  }
+
+  update() {}
+
+  private frame = () => {
+    this.frameTimer = requestAnimationFrame(this.frame);
+    this.update();
+    this.renderer.render(this.scene, this.camera);
+    this.gl.endFrameEXP();
+  };
 }
 
 export default function App() {
