@@ -9,6 +9,7 @@ class Canvas {
   private renderer: THREE.WebGLRenderer;
   private scene: THREE.Scene;
   private camera: THREE.PerspectiveCamera;
+  private c: THREE.Mesh;
 
   private frameTimer = 0;
 
@@ -29,7 +30,24 @@ class Canvas {
 
     renderer.setSize(width, height);
     renderer.setClearColor(sceneColor);
-    camera.position.set(2, 5, 5);
+    camera.position.set(0, 0, 5);
+
+    const circle = new THREE.CircleGeometry(1, 32);
+    const c = new THREE.Mesh(
+      circle,
+      new THREE.MeshBasicMaterial({
+        color: 0xe0e0e0,
+        opacity: 0.8,
+      })
+    );
+
+    c.position.x = 0;
+    c.position.y = 0;
+    c.position.z = 0;
+
+    this.c = c;
+
+    scene.add(c);
 
     renderer.render(scene, camera);
 
@@ -49,6 +67,8 @@ class Canvas {
 
   private frame = () => {
     this.frameTimer = requestAnimationFrame(this.frame);
+    // this.c.position.x += 0.01;
+    // this.c.position.y += 0.01;
     this.update();
     this.renderer.render(this.scene, this.camera);
     this.gl.endFrameEXP();
@@ -58,8 +78,6 @@ class Canvas {
 export default function App() {
   return (
     <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <StatusBar style="auto" />
       <GLView
         style={styles.canvas}
         onContextCreate={(gl: ExpoWebGLRenderingContext) => {
@@ -80,7 +98,5 @@ const styles = StyleSheet.create({
   canvas: {
     flex: 1,
     width: "100%",
-    borderColor: "red",
-    borderWidth: 1,
   },
 });
