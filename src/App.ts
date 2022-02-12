@@ -1,4 +1,4 @@
-import { ExpoWebGLRenderingContext } from "expo-gl";
+import { ExpoWebGLRenderingContext, GLView } from "expo-gl";
 import { Renderer, THREE } from "expo-three";
 
 export class App {
@@ -54,20 +54,41 @@ export class App {
 
   start() {
     this.frame();
+    return this;
   }
 
   stop() {
     cancelAnimationFrame(this.frameTimer);
   }
 
-  update() {}
+  update() {
+    // this.frame();
+    // move items here
+  }
 
-  private frame = () => {
-    this.frameTimer = requestAnimationFrame(this.frame);
-    // this.c.position.x += 0.01;
-    // this.c.position.y += 0.01;
+  setView(tx: number, ty: number, z: number) {
+    console.log(tx);
+    this.camera.position.x += tx;
+    this.frame();
+  }
+
+  frame = () => {
+    this.frameTimer = requestAnimationFrame(this._frame);
+  };
+
+  _frame = () => {
+    if (!this.gl) return;
+    console.log("frame");
+    // this.c.position.x += 0.1;
+    // this.c.position.y += 0.1;
     this.update();
     this.renderer.render(this.scene, this.camera);
     this.gl.endFrameEXP();
   };
+
+  async destroy() {
+    this.renderer.dispose();
+    // @ts-ignore
+    delete this.gl;
+  }
 }
