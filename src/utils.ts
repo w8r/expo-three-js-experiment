@@ -50,8 +50,8 @@ export function positionThreeCamera(
   fov: number
 ) {
   const scale = t.k;
-  const x = -(t.x - w / 2) / scale;
-  const y = (t.y - h / 2) / scale;
+  const x = -t.x / scale;
+  const y = t.y / scale;
   const z = getZFromScale(t.k, fov, h);
   camera.position.set(x, y, z);
 }

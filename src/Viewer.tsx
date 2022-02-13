@@ -44,6 +44,8 @@ export function Viewer({
   let prTargetSelf: number, prTargetOuter: number;
   let dropNextEvt = 0;
 
+  console.log(width, height);
+
   const processPinch = (x1: number, y1: number, x2: number, y2: number) => {
     const distance = calcDistance(x1, y1, x2, y2);
     const { x, y } = calcCenter(x1, y1, x2, y2);
@@ -53,8 +55,8 @@ export function Viewer({
       setState({
         ...state,
         isScaling: true,
-        initialX: x,
-        initialY: y,
+        initialX: x - width / 2,
+        initialY: y - height / 2,
         initialTop: state.top,
         initialLeft: state.left,
         initialZoom: state.zoom,
@@ -65,8 +67,8 @@ export function Viewer({
       const dx = x - state.initialX;
       const dy = y - state.initialY;
 
-      const left = (state.initialLeft + dx - x) * delta + x;
-      const top = (state.initialTop + dy - y) * delta + y;
+      const left = (state.initialLeft + dx - x) * delta + x - width / 2;
+      const top = (state.initialTop + dy - y) * delta + y - height / 2;
       const zoom = state.initialZoom * delta;
 
       setState({ ...state, zoom, left, top });
@@ -114,13 +116,6 @@ export function Viewer({
           dropNextEvt--;
           return;
         }
-
-        // Child element events are bubbled up but are not valid in out context. Sort them out
-        // if (evt.target !== prTargetSelf && evt.target !== prTargetOuter) {
-        //   console.log("drop ch");
-        //   dropNextEvt++;
-        //   return;
-        // }
 
         // HACK: the native event has some glitches with far-off coordinates.
         // Sort out the worst ones

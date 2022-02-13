@@ -49,8 +49,8 @@ export class App {
       })
     );
 
-    c.position.x = width / 4;
-    c.position.y = -height / 4;
+    c.position.x = 0;
+    c.position.y = 0;
     c.position.z = 0;
 
     this.c = c;
