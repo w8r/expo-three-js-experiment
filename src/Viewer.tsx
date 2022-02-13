@@ -146,6 +146,9 @@ export function Viewer({
 
   return (
     <Canvas
+      onWheel={(evt) => {
+        console.log(evt);
+      }}
       ref={containerRef}
       transform={{ x: state.left, y: state.top, k: state.zoom }}
       {...panResponder.panHandlers}
