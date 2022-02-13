@@ -15,14 +15,7 @@ export const Canvas = forwardRef(
     const [app, setApp] = useState<App | null>(null);
     const [gl, setGl] = useState<ExpoWebGLRenderingContext | null>(null);
 
-    //console.log(transform, app, !!gl);
-    if (app) {
-      //const { translateX, translateY, scaleX } = transform;
-      //console.log({ x: translateX, y: translateY, z: scaleX });
-      app.setView(transform.x, transform.y, transform.k);
-      //viewport.setTransform(translateX, translateY, scaleX, scaleX);
-      // call app frame
-    }
+    app?.setView(transform.x, transform.y, transform.k);
 
     useEffect(() => {
       return () => {

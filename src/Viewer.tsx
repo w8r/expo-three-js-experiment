@@ -44,8 +44,6 @@ export function Viewer({
   let prTargetSelf: number, prTargetOuter: number;
   let dropNextEvt = 0;
 
-  console.log(width, height);
-
   const processPinch = (x1: number, y1: number, x2: number, y2: number) => {
     const distance = calcDistance(x1, y1, x2, y2);
     const { x, y } = calcCenter(x1, y1, x2, y2);
