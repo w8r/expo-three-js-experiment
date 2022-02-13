@@ -1,6 +1,14 @@
 import * as React from "react";
 import { useState, useRef } from "react";
-import { ViewProps, PanResponderGestureState, PixelRatio } from "react-native";
+import {
+  ViewProps,
+  PanResponderGestureState,
+  PixelRatio,
+  TouchableWithoutFeedback,
+  View,
+  StyleSheet,
+  GestureResponderEvent,
+} from "react-native";
 import { Canvas } from "./Canvas";
 import {
   distance as calcDistance,
@@ -217,14 +225,29 @@ export function Viewer({
 
   const onWheel = (evt: WheelEvent) => {};
 
+  const onTap = (evt: GestureResponderEvent) => {};
+
   return (
-    <Canvas
-      ref={containerRef}
-      onWheel={onWheel}
-      graph={graph}
-      dppx={dppx}
-      transform={{ x: state.left, y: state.top, k: state.zoom }}
-      {...panResponder.panHandlers}
-    />
+    <View style={styles.container} {...panResponder.panHandlers}>
+      <TouchableWithoutFeedback onPress={onTap}>
+        <Canvas
+          ref={containerRef}
+          style={styles.canvas}
+          onWheel={onWheel}
+          graph={graph}
+          dppx={dppx}
+          transform={{ x: state.left, y: state.top, k: state.zoom }}
+        />
+      </TouchableWithoutFeedback>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  canvas: {
+    flex: 1,
+  },
+});

@@ -19,10 +19,31 @@ import {
   Color,
   LineBasicMaterial,
 } from "three";
+import { Text } from "troika-three-text";
 import { quadtree } from "d3-quadtree";
 import { Graph, GraphEdge, GraphNode } from "./types";
 
 const FOV = 80;
+
+function getEdgePoints(source: GraphNode, target: GraphNode) {
+  const sx = source.attributes.x;
+  const sy = source.attributes.y;
+  const tx = target.attributes.x;
+  const ty = target.attributes.y;
+  const sr = source.attributes.r;
+  const tr = target.attributes.r;
+
+  const d = Math.sqrt(Math.pow(tx - sx, 2) + Math.pow(ty - sy, 2));
+  //const arrowLength = d * 0.1;
+  const t1 = sr / d;
+  const t2 = 1 - tr / d;
+  //const t3 = 1 - (tr + arrowLength) / d;
+
+  const p0 = pointOnLine(sx, sy, tx, ty, t1);
+  const p1 = pointOnLine(sx, sy, tx, ty, t2);
+
+  return [new Vector3(p0.x, p0.y, 0), new Vector3(p1.x, p1.y, 0)];
+}
 
 export class App {
   private gl: ExpoWebGLRenderingContext;
@@ -33,7 +54,12 @@ export class App {
   private edgeMeshes: Line[] = [];
   private width: number = 0;
   private height: number = 0;
-  private idToMesh = new Map<number, Mesh>();
+  private idToMesh = new Map<number, Mesh | Line>();
+  private idToText = new Map<number, Text>();
+  private edgesBySource = new Map<number, GraphEdge[]>();
+  private edgesByTarget = new Map<number, GraphEdge[]>();
+  private idToNode = new Map<number, GraphNode>();
+  private idToEdge = new Map<number, GraphEdge>();
 
   private frameTimer = 0;
   private dppx = 1;
@@ -76,10 +102,19 @@ export class App {
     const { scene, width, height } = this;
     scene.clear();
 
+    this.edgeMeshes = [];
+    this.nodeMeshes = [];
+    this.idToMesh.clear();
+    this.idToText.clear();
+    this.edgesBySource.clear();
+    this.edgesByTarget.clear();
+    this.idToNode.clear();
+    this.idToEdge.clear();
+
     const circle = new CircleGeometry(1, 32);
 
-    const idToMesh = new Map<number, Mesh | Line>();
-    const idToNode = new Map<number, GraphNode>();
+    const idToMesh = this.idToMesh;
+    const idToNode = this.idToNode;
 
     const quadtreeNodes = quadtree<GraphNode>();
     nodes.forEach((node, i) => {
@@ -87,6 +122,7 @@ export class App {
         id,
         attributes: { x, y, r, color: rgbColor },
       } = node;
+
       const material = new MeshBasicMaterial({
         color: new Color(rgbColor),
       });
@@ -100,11 +136,32 @@ export class App {
       idToMesh.set(id, mesh);
       idToNode.set(id, node);
 
+      const text = new Text();
+
+      text.renderOrder = 2;
+      // Set properties to configure:
+      text.text = "Hello world!";
+      text.fontSize = 2;
+      text.position.z = 0;
+      text.position.x = x;
+      text.position.y = y - r;
+      text.anchorX = "center";
+      text.anchorY = "top";
+      text.color = new Color(0xffffff);
+
+      // Update the rendering:
+      //text.sync();
+
       this.nodeMeshes.push(mesh);
+      this.idToText.set(id, text);
+      scene.add(text);
       scene.add(mesh);
     });
 
-    const idToEdge = new Map<number, GraphEdge>();
+    const idToEdge = this.idToEdge;
+    const edgesBySource = this.edgesBySource;
+    const edgesByTarget = this.edgesByTarget;
+
     edges.forEach((edge) => {
       const {
         id,
@@ -115,28 +172,16 @@ export class App {
       const sourceNode = idToNode.get(source) as GraphNode;
       const targetNode = idToNode.get(target) as GraphNode;
 
-      const sx = sourceNode.attributes.x;
-      const sy = sourceNode.attributes.y;
-      const tx = targetNode.attributes.x;
-      const ty = targetNode.attributes.y;
-      const sr = sourceNode.attributes.r;
-      const tr = targetNode.attributes.r;
+      // adjacent edges
+      let edgeSet = edgesBySource.get(source) || [];
+      edgesBySource.set(source, edgeSet);
+      edgeSet.push(edge);
+      edgeSet = edgesByTarget.get(target) || [];
+      edgesByTarget.set(target, edgeSet);
+      edgeSet.push(edge);
 
-      const d = Math.sqrt(Math.pow(tx - sx, 2) + Math.pow(ty - sy, 2));
-      //const arrowLength = d * 0.1;
-      const t1 = sr / d;
-      const t2 = 1 - tr / d;
-      //const t3 = 1 - (tr + arrowLength) / d;
-
-      const p0 = pointOnLine(sx, sy, tx, ty, t1);
-      const p1 = pointOnLine(sx, sy, tx, ty, t2);
-
-      const geometry = new BufferGeometry().setFromPoints([
-        // new Vector3(sourceNode.attributes.x, sourceNode.attributes.y, 0),
-        // new Vector3(targetNode.attributes.x, targetNode.attributes.y, 0),
-        new Vector3(p0.x, p0.y, 0),
-        new Vector3(p1.x, p1.y, 0),
-      ]);
+      const points = getEdgePoints(sourceNode, targetNode);
+      const geometry = new BufferGeometry().setFromPoints(points);
 
       const material = new LineBasicMaterial({
         color: new Color(rgbColor),
@@ -162,15 +207,39 @@ export class App {
       // arrowHelper.renderOrder = 3;
       // scene.add(arrowHelper);
     });
+
+    this.edgesBySource = edgesBySource;
+    this.edgesByTarget = edgesByTarget;
+    this.idToNode = idToNode;
+    this.idToEdge = idToEdge;
   }
 
   selectNode() {}
 
   getNodeAt(x: number, y: number) {}
 
-  moveNode(node: Mesh, x: number, y: number) {
-    node.position.x = x;
-    node.position.y = y;
+  moveNode(node: GraphNode, x: number, y: number) {
+    node.attributes.x = x;
+    node.attributes.y = y;
+    const nodeMesh = this.idToMesh.get(node.id) as Mesh;
+    nodeMesh.position.x = x;
+    nodeMesh.position.y = y;
+
+    let edgeSet = [
+      ...(this.edgesBySource.get(node.id) || []),
+      ...(this.edgesByTarget.get(node.id) || []),
+    ];
+    edgeSet?.forEach((edge) => {
+      const s = this.idToNode.get(edge.source) as GraphNode;
+      const t = this.idToNode.get(edge.target) as GraphNode;
+      const mesh = this.idToMesh.get(edge.id) as Line;
+      const points = getEdgePoints(s, t);
+      mesh.geometry.setFromPoints(points);
+    });
+    const textMesh = this.idToText.get(node.id);
+    textMesh.position.x = x;
+    textMesh.position.y = y - node.attributes.r;
+    textMesh.sync();
   }
 
   start() {

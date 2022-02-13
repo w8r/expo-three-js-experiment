@@ -2811,6 +2811,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"bidi-js@npm:^1.0.2":
+  version: 1.0.2
+  resolution: "bidi-js@npm:1.0.2"
+  dependencies:
+    require-from-string: ^2.0.2
+  checksum: 1e33008ed4b248b0350cfed5aebbc8717489bc0d3bcee9f5f99b778d82d997df621adefe6f22fffe005dc3bd8c08445b0b17af7c5d8d1a4a25f15f7702d30e68
+  languageName: node
+  linkType: hard
+
 "big-integer@npm:1.6.x":
   version: 1.6.51
   resolution: "big-integer@npm:1.6.51"
@@ -4115,6 +4124,7 @@ __metadata:
     react-native: 0.63.4
     react-native-web: 0.17.1
     three: ^0.137.5
+    troika-three-text: ^0.45.0
     typescript: ~4.3.5
   languageName: unknown
   linkType: soft
@@ -8185,6 +8195,35 @@ __metadata:
   version: 0.0.3
   resolution: "tr46@npm:0.0.3"
   checksum: 726321c5eaf41b5002e17ffbd1fb7245999a073e8979085dacd47c4b4e8068ff5777142fc6726d6ca1fd2ff16921b48788b87225cbc57c72636f6efa8efbffe3
+  languageName: node
+  linkType: hard
+
+"troika-three-text@npm:^0.45.0":
+  version: 0.45.0
+  resolution: "troika-three-text@npm:0.45.0"
+  dependencies:
+    bidi-js: ^1.0.2
+    troika-three-utils: ^0.45.0
+    troika-worker-utils: ^0.45.0
+  peerDependencies:
+    three: ">=0.103.0"
+  checksum: b96769e36a6d1936b6dd820fc7178552a2b9d23f4cf875a1c0366e4ceb84dfdb7040e77bf8ccf09496acfbfe3ef88260c51d73cfda5bb41aef8269099c1fc8c7
+  languageName: node
+  linkType: hard
+
+"troika-three-utils@npm:^0.45.0":
+  version: 0.45.0
+  resolution: "troika-three-utils@npm:0.45.0"
+  peerDependencies:
+    three: ">=0.103.0"
+  checksum: 8e0dc0171b48b65f424a12d82f383c10ecbc37f3185a4586acd8dac24e4d773c9947a32afb4076248848b24f6f31dbee3604dfaa64766592b7ccc27dfd6df2af
+  languageName: node
+  linkType: hard
+
+"troika-worker-utils@npm:^0.45.0":
+  version: 0.45.0
+  resolution: "troika-worker-utils@npm:0.45.0"
+  checksum: 8ebc24ad3194fb87801ed27f81c759680647404fa3ef99f25c481ce608364be61e027e02dc7c225e74827cb24162fb9b95040396f3200717e355db9e7f75fc9c
   languageName: node
   linkType: hard
 
