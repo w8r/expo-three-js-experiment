@@ -1,12 +1,13 @@
 import * as React from "react";
-import { useState, FC, forwardRef } from "react";
+import { useState, forwardRef } from "react";
 import { ExpoWebGLRenderingContext, GLView } from "expo-gl";
-import { Dimensions, StyleSheet, ViewProps } from "react-native";
+import { StyleSheet, ViewProps } from "react-native";
 import { App } from "./App";
 import { Transform } from "./utils";
 import { useEffect } from "react";
 
 type CanvasProps = ViewProps & {
+  onWheel?: (e: WheelEvent) => void;
   transform?: Transform;
 };
 

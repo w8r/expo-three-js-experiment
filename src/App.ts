@@ -41,7 +41,7 @@ export class App {
     renderer.setClearColor(sceneColor);
     camera.position.set(0, 0, 1);
 
-    const circle = new CircleGeometry(100, 32);
+    const circle = new CircleGeometry(10, 32);
     const mat = new MeshBasicMaterial({
       color: 0xe0e0e0,
       opacity: 0.8,
@@ -62,6 +62,16 @@ export class App {
     d.position.z = 0;
 
     scene.add(d);
+
+    Array(100)
+      .fill(0)
+      .forEach((_, i) => {
+        const m = new Mesh(circle, mat);
+        m.position.x = (Math.random() - 0.5) * (width / 2);
+        m.position.y = (Math.random() - 0.5) * (height / 2);
+        //m.position.z = Math.random() * 1000;
+        scene.add(m);
+      });
 
     renderer.render(scene, camera);
 
@@ -85,6 +95,7 @@ export class App {
 
   setView(x: number, y: number, k: number) {
     if (!this.gl) return;
+    // rotation around Z can be added here
     positionThreeCamera(
       this.camera,
       { x, y, k },

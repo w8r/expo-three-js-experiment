@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useState, useRef } from "react";
-import { ViewProps, PanResponderGestureState } from "react-native";
+import { ViewProps, PanResponderGestureState, View } from "react-native";
 import { Canvas } from "./Canvas";
 import { distance as calcDistance, center as calcCenter, clamp } from "./utils";
 import { usePanResponder } from "./usePanResponder";
@@ -133,6 +133,7 @@ export function Viewer({
       onPanResponderRelease: (evt, gestureState) => {
         // The user has released all touches while this view is the
         // responder. This typically means a gesture has succeeded
+        console.log("onPanResponderRelease");
         setState({ ...state, isMoving: false, isScaling: false });
       },
       onPanResponderTerminate: (evt, gestureState) => {
@@ -144,12 +145,12 @@ export function Viewer({
     [state]
   );
 
+  const onWheel = (evt: WheelEvent) => {};
+
   return (
     <Canvas
-      onWheel={(evt) => {
-        console.log(evt);
-      }}
       ref={containerRef}
+      onWheel={onWheel}
       transform={{ x: state.left, y: state.top, k: state.zoom }}
       {...panResponder.panHandlers}
     />
