@@ -11,23 +11,16 @@ type CanvasProps = ViewProps & {
 };
 
 export const Canvas = forwardRef(
-  (
-    {
-      transform = { translateX: 0, translateY: 0, scaleX: 0, scaleY: 0 },
-      ...rest
-    }: CanvasProps,
-    ref
-  ) => {
+  ({ transform = { x: 0, y: 0, k: 1 }, ...rest }: CanvasProps, ref) => {
     const [app, setApp] = useState<App | null>(null);
     const [gl, setGl] = useState<ExpoWebGLRenderingContext | null>(null);
 
     //console.log(transform, app, !!gl);
     if (app) {
-      const { translateX, translateY, scaleX } = transform;
-      console.log({ x: translateX, y: translateY, z: scaleX });
-      //app.setView(translateX, translateY, scaleX);
+      //const { translateX, translateY, scaleX } = transform;
+      //console.log({ x: translateX, y: translateY, z: scaleX });
+      app.setView(transform.x, transform.y, transform.k);
       //viewport.setTransform(translateX, translateY, scaleX, scaleX);
-
       // call app frame
     }
 

@@ -1,11 +1,13 @@
 import { ExpoWebGLRenderingContext, GLView } from "expo-gl";
 import { Renderer, THREE } from "expo-three";
+import { positionThreeCamera } from "./utils";
 
 export class App {
   private gl: ExpoWebGLRenderingContext;
   private renderer: THREE.WebGLRenderer;
   private scene: THREE.Scene;
   private camera: THREE.PerspectiveCamera;
+  //private camera: THREE.OrthographicCamera;
   private c: THREE.Mesh;
 
   private frameTimer = 0;
@@ -22,14 +24,23 @@ export class App {
       80,
       width / height,
       0.01,
-      1000
+      10000
     ));
+
+    // const camera = (this.camera = new THREE.OrthographicCamera(
+    //   -width / 2,
+    //   width / 2,
+    //   height / 2,
+    //   -height / 2,
+    //   0.01,
+    //   1000
+    // ));
 
     renderer.setSize(width, height);
     renderer.setClearColor(sceneColor);
-    camera.position.set(0, 0, 5);
+    camera.position.set(0, 0, 1);
 
-    const circle = new THREE.CircleGeometry(1, 132);
+    const circle = new THREE.CircleGeometry(100, 32);
     const c = new THREE.Mesh(
       circle,
       new THREE.MeshBasicMaterial({
@@ -38,13 +49,26 @@ export class App {
       })
     );
 
-    c.position.x = 0;
-    c.position.y = 0;
+    c.position.x = width / 4;
+    c.position.y = -height / 4;
     c.position.z = 0;
 
     this.c = c;
 
     scene.add(c);
+
+    const d = new THREE.Mesh(
+      circle,
+      new THREE.MeshBasicMaterial({
+        color: 0xe0e0e0,
+        opacity: 0.8,
+      })
+    );
+    d.position.x = -width / 4;
+    d.position.y = -height / 4;
+    d.position.z = 0;
+
+    scene.add(d);
 
     renderer.render(scene, camera);
 
@@ -66,14 +90,28 @@ export class App {
     // move items here
   }
 
-  setView(tx: number, ty: number, z: number) {
-    console.log(tx);
-    this.camera.position.x += tx;
-    this.frame();
+  setView(x: number, y: number, k: number) {
+    positionThreeCamera(
+      this.camera,
+      { x, y, k },
+      this.gl.drawingBufferWidth / 2,
+      this.gl.drawingBufferHeight / 2,
+      80
+    );
+    //console.log(this.camera.position);
+    // this.camera.position.x = -tx;
+    // this.camera.position.y = ty;
+    // this.camera.position.z = z;
   }
 
   frame = () => {
-    this.frameTimer = requestAnimationFrame(this._frame);
+    if (!this.gl) return;
+
+    //this.camera.position.x -= 0.5;
+
+    this.renderer.render(this.scene, this.camera);
+    this.gl.endFrameEXP();
+    this.frameTimer = requestAnimationFrame(this.frame);
   };
 
   _frame = () => {
