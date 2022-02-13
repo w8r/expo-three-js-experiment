@@ -77,11 +77,11 @@ export function bbox({ nodes }: Graph) {
   let maxX = -Infinity;
   let maxY = -Infinity;
   for (let i = 0; i < nodes.length; i++) {
-    const { x = 0, y = 0 } = nodes[i].attributes;
-    if (x < minX) minX = x;
-    if (x > maxX) maxX = x;
-    if (y < minY) minY = y;
-    if (y > maxY) maxY = y;
+    const { x = 0, y = 0, r = 0 } = nodes[i].attributes;
+    if (x - r < minX) minX = x - r;
+    if (x + r > maxX) maxX = x + r;
+    if (y - r < minY) minY = y - r;
+    if (y + r > maxY) maxY = y + r;
   }
 
   return { minX, minY, maxX, maxY };
@@ -101,17 +101,13 @@ export function getBoundsTransform(
   const cx = (xmin + xmax) / 2 || 0;
   const cy = (ymin + ymax) / 2 || 0;
 
+  if (isNaN(w) || isNaN(h)) return { x: 0, y: 0, k: 1 };
+
   const hw = canvasWidth / 2;
   const hh = canvasHeight / 2;
 
-  if (isNaN(w) || isNaN(h)) {
-    return { x: hw, y: hh, k: 1 };
-  }
-
   const scale =
-    w === 0 || h === 0
-      ? 8
-      : Math.min(canvasWidth / (w + padding), canvasHeight / h + padding);
+    w === 0 || h === 0 ? 8 : Math.min(hw / (w + padding), hh / (h + padding));
 
   return { x: cx * scale, y: cy * scale, k: scale };
 }

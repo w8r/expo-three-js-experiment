@@ -77,8 +77,9 @@ export function Viewer({
     minY,
     maxX,
     maxY,
-    width * 2,
-    height * 2
+    width * dppx,
+    height * dppx,
+    20
   );
 
   initialZoom = transform.k;

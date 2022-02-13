@@ -61,6 +61,7 @@ export class App {
     ));
 
     renderer.setSize(width, height);
+    renderer.pixelRatio = dppx;
     renderer.setClearColor(sceneColor);
 
     camera.position.set(0, 0, 1);
@@ -104,7 +105,7 @@ export class App {
     });
 
     const idToEdge = new Map<number, GraphEdge>();
-    edges.forEach((edge, i) => {
+    edges.forEach((edge) => {
       const {
         id,
         source,
@@ -122,10 +123,10 @@ export class App {
       const tr = targetNode.attributes.r;
 
       const d = Math.sqrt(Math.pow(tx - sx, 2) + Math.pow(ty - sy, 2));
-      const arrowLength = d * 0.1;
+      //const arrowLength = d * 0.1;
       const t1 = sr / d;
       const t2 = 1 - tr / d;
-      const t3 = 1 - (tr + arrowLength) / d;
+      //const t3 = 1 - (tr + arrowLength) / d;
 
       const p0 = pointOnLine(sx, sy, tx, ty, t1);
       const p1 = pointOnLine(sx, sy, tx, ty, t2);
@@ -192,8 +193,8 @@ export class App {
     positionThreeCamera(
       this.camera,
       { x, y, k },
-      this.gl.drawingBufferWidth / 2,
-      this.gl.drawingBufferHeight / 2,
+      this.gl.drawingBufferWidth / this.dppx,
+      this.gl.drawingBufferHeight / this.dppx,
       FOV
     );
   }
