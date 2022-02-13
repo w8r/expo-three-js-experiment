@@ -1,18 +1,24 @@
 import * as React from "react";
+import { useEffect } from "react";
 import { useState, forwardRef } from "react";
 import { ExpoWebGLRenderingContext, GLView } from "expo-gl";
 import { StyleSheet, ViewProps } from "react-native";
 import { App } from "./App";
 import { Transform } from "./utils";
-import { useEffect } from "react";
+import { Graph } from "./types";
 
 type CanvasProps = ViewProps & {
   onWheel?: (e: WheelEvent) => void;
   transform?: Transform;
+  graph?: Graph;
+  dppx?: number;
 };
 
 export const Canvas = forwardRef(
-  ({ transform = { x: 0, y: 0, k: 1 }, ...rest }: CanvasProps, ref) => {
+  (
+    { transform = { x: 0, y: 0, k: 1 }, graph, dppx = 1, ...rest }: CanvasProps,
+    ref
+  ) => {
     const [app, setApp] = useState<App | null>(null);
     const [gl, setGl] = useState<ExpoWebGLRenderingContext | null>(null);
 
@@ -27,7 +33,9 @@ export const Canvas = forwardRef(
 
     const onContextCreate = (gl: ExpoWebGLRenderingContext) => {
       //setGl(gl);
-      setApp(new App(gl));
+      const newApp = new App(gl, dppx);
+      setApp(newApp);
+      if (graph) newApp.setGraph(graph);
     };
 
     return (

@@ -1,9 +1,53 @@
 import * as React from "react";
 import { useState, useRef } from "react";
-import { ViewProps, PanResponderGestureState, View } from "react-native";
+import { ViewProps, PanResponderGestureState, PixelRatio } from "react-native";
 import { Canvas } from "./Canvas";
-import { distance as calcDistance, center as calcCenter, clamp } from "./utils";
+import {
+  distance as calcDistance,
+  center as calcCenter,
+  clamp,
+  bbox as graphBbox,
+  getBoundsTransform,
+} from "./utils";
 import { usePanResponder } from "./usePanResponder";
+import { Graph } from "./types";
+
+const graph: Graph = {
+  nodes: [
+    {
+      id: 0,
+      attributes: { x: 0, y: 0, r: 2, color: "red" },
+    },
+    {
+      id: 1,
+      attributes: { x: 10, y: 10, r: 5, color: "blue" },
+    },
+    {
+      id: 2,
+      attributes: { x: -10, y: 10, r: 3, color: "green" },
+    },
+  ],
+  edges: [
+    {
+      id: 3,
+      source: 0,
+      target: 1,
+      attributes: { color: "black", width: 3 },
+    },
+    {
+      id: 4,
+      source: 1,
+      target: 2,
+      attributes: { color: "black", width: 2 },
+    },
+    {
+      id: 5,
+      source: 2,
+      target: 0,
+      attributes: { color: "black", width: 1 },
+    },
+  ],
+};
 
 export interface ViewerProps extends ViewProps {
   width?: number;
@@ -25,13 +69,30 @@ export function Viewer({
 }: ViewerProps) {
   const containerRef = useRef<typeof Canvas>();
 
+  const dppx = PixelRatio.get();
+
+  const { minX, minY, maxX, maxY } = graphBbox(graph);
+  const transform = getBoundsTransform(
+    minX,
+    minY,
+    maxX,
+    maxY,
+    width * 2,
+    height * 2
+  );
+
+  initialZoom = transform.k;
+  const top = transform.y;
+  const left = transform.x;
+  //this.setView(transform.x, transform.y, transform.k);
+
   const [state, setState] = useState({
     isMoving: false,
     isScaling: false,
     initialDistance: 1,
-    // new
-    top: 0,
-    left: 0,
+
+    top,
+    left,
     zoom: initialZoom,
 
     initialZoom: 0,
@@ -73,7 +134,16 @@ export function Viewer({
     }
   };
 
-  const processTouch = ({ dx, dy, x0, y0 }: PanResponderGestureState) => {
+  const processTouch = ({
+    dx,
+    dy,
+    x0,
+    y0,
+    moveX,
+    moveY,
+  }: PanResponderGestureState) => {
+    // figure out if we are on the node or not
+
     if (!state.isMoving) {
       setState({
         ...state,
@@ -133,7 +203,6 @@ export function Viewer({
       onPanResponderRelease: (evt, gestureState) => {
         // The user has released all touches while this view is the
         // responder. This typically means a gesture has succeeded
-        console.log("onPanResponderRelease");
         setState({ ...state, isMoving: false, isScaling: false });
       },
       onPanResponderTerminate: (evt, gestureState) => {
@@ -151,6 +220,8 @@ export function Viewer({
     <Canvas
       ref={containerRef}
       onWheel={onWheel}
+      graph={graph}
+      dppx={dppx}
       transform={{ x: state.left, y: state.top, k: state.zoom }}
       {...panResponder.panHandlers}
     />

@@ -2142,6 +2142,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/d3-quadtree@npm:^3.0.2":
+  version: 3.0.2
+  resolution: "@types/d3-quadtree@npm:3.0.2"
+  checksum: 2a831a80590df125b07bc573c081449823e85159bb8fafbfee9f211dbe402840aeb01f4b04b4b47b0f28394daee29c8a10185f9acf17b6a8be649a377aff006b
+  languageName: node
+  linkType: hard
+
 "@types/d3-selection@npm:*":
   version: 3.0.2
   resolution: "@types/d3-selection@npm:3.0.2"
@@ -3542,6 +3549,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"d3-quadtree@npm:^3.0.1":
+  version: 3.0.1
+  resolution: "d3-quadtree@npm:3.0.1"
+  checksum: 5469d462763811475f34a7294d984f3eb100515b0585ca5b249656f6b1a6e99b20056a2d2e463cc9944b888896d2b1d07859c50f9c0cf23438df9cd2e3146066
+  languageName: node
+  linkType: hard
+
 "d3-selection@npm:2 - 3, d3-selection@npm:3":
   version: 3.0.0
   resolution: "d3-selection@npm:3.0.0"
@@ -4085,10 +4099,12 @@ __metadata:
   resolution: "expo-three-graph@workspace:."
   dependencies:
     "@babel/core": ^7.12.9
+    "@types/d3-quadtree": ^3.0.2
     "@types/d3-zoom": ^3.0.1
     "@types/react": ~17.0.21
     "@types/react-native": ~0.64.12
     "@types/three": ^0.137.0
+    d3-quadtree: ^3.0.1
     d3-zoom: ^3.0.0
     expo: ~42.0.0
     expo-gl: ^9.2.0
