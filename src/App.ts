@@ -1,14 +1,23 @@
 import { ExpoWebGLRenderingContext, GLView } from "expo-gl";
-import { Renderer, THREE } from "expo-three";
+import { Renderer } from "expo-three";
 import { positionThreeCamera } from "./utils";
+import {
+  PerspectiveCamera,
+  Scene,
+  WebGLRenderer,
+  CircleGeometry,
+  Mesh,
+  MeshBasicMaterial,
+} from "three";
+
+const FOV = 80;
 
 export class App {
   private gl: ExpoWebGLRenderingContext;
-  private renderer: THREE.WebGLRenderer;
-  private scene: THREE.Scene;
-  private camera: THREE.PerspectiveCamera;
-  //private camera: THREE.OrthographicCamera;
-  private c: THREE.Mesh;
+  private renderer: WebGLRenderer;
+  private scene: Scene;
+  private camera: PerspectiveCamera;
+  private c: Mesh;
 
   private frameTimer = 0;
 
@@ -19,35 +28,25 @@ export class App {
     const sceneColor = 0x10505b;
 
     const renderer = (this.renderer = new Renderer({ gl }));
-    const scene = (this.scene = new THREE.Scene());
-    const camera = (this.camera = new THREE.PerspectiveCamera(
-      80,
-      width / height,
-      0.01,
-      10000
+    const scene = (this.scene = new Scene());
+    const aspect = width / height;
+    const camera = (this.camera = new PerspectiveCamera(
+      FOV,
+      aspect,
+      1e-5,
+      1e6
     ));
-
-    // const camera = (this.camera = new THREE.OrthographicCamera(
-    //   -width / 2,
-    //   width / 2,
-    //   height / 2,
-    //   -height / 2,
-    //   0.01,
-    //   1000
-    // ));
 
     renderer.setSize(width, height);
     renderer.setClearColor(sceneColor);
     camera.position.set(0, 0, 1);
 
-    const circle = new THREE.CircleGeometry(100, 32);
-    const c = new THREE.Mesh(
-      circle,
-      new THREE.MeshBasicMaterial({
-        color: 0xe0e0e0,
-        opacity: 0.8,
-      })
-    );
+    const circle = new CircleGeometry(100, 32);
+    const mat = new MeshBasicMaterial({
+      color: 0xe0e0e0,
+      opacity: 0.8,
+    });
+    const c = new Mesh(circle, mat);
 
     c.position.x = 0;
     c.position.y = 0;
@@ -57,13 +56,7 @@ export class App {
 
     scene.add(c);
 
-    const d = new THREE.Mesh(
-      circle,
-      new THREE.MeshBasicMaterial({
-        color: 0xe0e0e0,
-        opacity: 0.8,
-      })
-    );
+    const d = new Mesh(circle, mat);
     d.position.x = -width / 4;
     d.position.y = -height / 4;
     d.position.z = 0;
@@ -91,24 +84,18 @@ export class App {
   }
 
   setView(x: number, y: number, k: number) {
+    if (!this.gl) return;
     positionThreeCamera(
       this.camera,
       { x, y, k },
       this.gl.drawingBufferWidth / 2,
       this.gl.drawingBufferHeight / 2,
-      80
+      FOV
     );
-    //console.log(this.camera.position);
-    // this.camera.position.x = -tx;
-    // this.camera.position.y = ty;
-    // this.camera.position.z = z;
   }
 
   frame = () => {
     if (!this.gl) return;
-
-    //this.camera.position.x -= 0.5;
-
     this.renderer.render(this.scene, this.camera);
     this.gl.endFrameEXP();
     this.frameTimer = requestAnimationFrame(this.frame);
@@ -116,9 +103,6 @@ export class App {
 
   _frame = () => {
     if (!this.gl) return;
-    console.log("frame");
-    // this.c.position.x += 0.1;
-    // this.c.position.y += 0.1;
     this.update();
     this.renderer.render(this.scene, this.camera);
     this.gl.endFrameEXP();

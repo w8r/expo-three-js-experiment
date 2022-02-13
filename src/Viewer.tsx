@@ -2,7 +2,7 @@ import * as React from "react";
 import { useState, useRef } from "react";
 import { ViewProps, PanResponderGestureState } from "react-native";
 import { Canvas } from "./Canvas";
-import { distance as calcDistance, center as calcCenter } from "./utils";
+import { distance as calcDistance, center as calcCenter, clamp } from "./utils";
 import { usePanResponder } from "./usePanResponder";
 
 export interface ViewerProps extends ViewProps {
@@ -67,7 +67,7 @@ export function Viewer({
 
       const left = (state.initialLeft + dx - x) * delta + x - width / 2;
       const top = (state.initialTop + dy - y) * delta + y - height / 2;
-      const zoom = state.initialZoom * delta;
+      const zoom = clamp(state.initialZoom * delta, minScale, maxScale);
 
       setState({ ...state, zoom, left, top });
     }
