@@ -6,6 +6,7 @@ import { StyleSheet, ViewProps } from "react-native";
 import { App } from "./App";
 import { Transform } from "./utils";
 import { Graph } from "./types";
+import { useVis } from "./context";
 
 type CanvasProps = ViewProps & {
   onWheel?: (e: WheelEvent) => void;
@@ -19,10 +20,12 @@ export const Canvas = forwardRef(
     { transform = { x: 0, y: 0, k: 1 }, graph, dppx = 1, ...rest }: CanvasProps,
     ref
   ) => {
-    const [app, setApp] = useState<App | null>(null);
+    //const [app, setApp] = useState<App | null>(null);
     const [gl, setGl] = useState<ExpoWebGLRenderingContext | null>(null);
+    const { app, setApp } = useVis();
 
     app?.setView(transform.x, transform.y, transform.k);
+    if (graph) app?.setGraph(graph);
 
     useEffect(() => {
       return () => {
@@ -32,10 +35,9 @@ export const Canvas = forwardRef(
     }, [gl]);
 
     const onContextCreate = (gl: ExpoWebGLRenderingContext) => {
-      //setGl(gl);
-      const newApp = new App(gl, dppx);
-      setApp(newApp);
-      if (graph) newApp.setGraph(graph);
+      setApp(new App(gl, dppx));
+      setGl(gl);
+      // app.init(gl, dppx);
     };
 
     return (

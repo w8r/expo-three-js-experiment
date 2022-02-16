@@ -1,11 +1,6 @@
 import { ExpoWebGLRenderingContext, GLView } from "expo-gl";
 import { Renderer } from "expo-three";
-import {
-  positionThreeCamera,
-  pointOnLine,
-  getBoundsTransform,
-  bbox,
-} from "./utils";
+import { positionThreeCamera, pointOnLine, mouseToThree } from "./utils";
 import {
   PerspectiveCamera,
   Scene,
@@ -19,6 +14,7 @@ import {
   Color,
   LineBasicMaterial,
 } from "three";
+// @ts-ignore
 import { Text } from "troika-three-text";
 import { quadtree } from "d3-quadtree";
 import { Graph, GraphEdge, GraphNode } from "./types";
@@ -46,10 +42,14 @@ function getEdgePoints(source: GraphNode, target: GraphNode) {
 }
 
 export class App {
+  // TODO: solve later
+  // @ts-ignore
   private gl: ExpoWebGLRenderingContext;
+  // @ts-ignore
   private renderer: WebGLRenderer;
-  private scene: Scene;
-  private camera: PerspectiveCamera;
+
+  private scene: Scene = new Scene();
+  private camera: PerspectiveCamera = new PerspectiveCamera();
   private nodeMeshes: Mesh[] = [];
   private edgeMeshes: Line[] = [];
   private width: number = 0;
@@ -60,9 +60,15 @@ export class App {
   private edgesByTarget = new Map<number, GraphEdge[]>();
   private idToNode = new Map<number, GraphNode>();
   private idToEdge = new Map<number, GraphEdge>();
+  private nodes: GraphNode[] = [];
+  private edges: GraphEdge[] = [];
 
   private frameTimer = 0;
   private dppx = 1;
+
+  private x = 0;
+  private y = 0;
+  private k = 0;
 
   constructor(
     gl: ExpoWebGLRenderingContext,
@@ -96,6 +102,7 @@ export class App {
 
     gl.endFrameEXP();
     this.start();
+    return this;
   }
 
   setGraph({ nodes, edges }: Graph) {
@@ -136,25 +143,25 @@ export class App {
       idToMesh.set(id, mesh);
       idToNode.set(id, node);
 
-      const text = new Text();
+      // const text = new Text();
 
-      text.renderOrder = 2;
-      // Set properties to configure:
-      text.text = "Hello world!";
-      text.fontSize = 2;
-      text.position.z = 0;
-      text.position.x = x;
-      text.position.y = y - r;
-      text.anchorX = "center";
-      text.anchorY = "top";
-      text.color = new Color(0xffffff);
+      // text.renderOrder = 2;
+      // // Set properties to configure:
+      // text.text = "Hello world!";
+      // text.fontSize = 2;
+      // text.position.z = 0;
+      // text.position.x = x;
+      // text.position.y = y - r;
+      // text.anchorX = "center";
+      // text.anchorY = "top";
+      // text.color = new Color(0xffffff);
 
       // Update the rendering:
       //text.sync();
 
       this.nodeMeshes.push(mesh);
-      this.idToText.set(id, text);
-      scene.add(text);
+      //this.idToText.set(id, text);
+      //scene.add(text);
       scene.add(mesh);
     });
 
@@ -212,6 +219,9 @@ export class App {
     this.edgesByTarget = edgesByTarget;
     this.idToNode = idToNode;
     this.idToEdge = idToEdge;
+
+    this.nodes = nodes;
+    this.edges = edges;
   }
 
   selectNode() {}
@@ -256,8 +266,24 @@ export class App {
     // move items here
   }
 
+  getElementAt(x: number, y: number) {
+    const pos = mouseToThree(
+      x,
+      y,
+      this.width / this.dppx,
+      this.height / this.dppx
+    );
+    const ex = (x - this.x) / this.k;
+    const ey = (y - this.y) / this.k;
+    console.log(x, y, this.x, this.y, this.k, { ex, ey });
+  }
+
   setView(x: number, y: number, k: number) {
     if (!this.gl) return;
+    this.x = x;
+    this.y = y;
+    this.k = k;
+
     // rotation around Z can be added here
     positionThreeCamera(
       this.camera,

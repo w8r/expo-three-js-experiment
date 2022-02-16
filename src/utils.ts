@@ -1,5 +1,5 @@
 import { ZoomTransform } from "d3-zoom";
-import { PerspectiveCamera } from "three";
+import { PerspectiveCamera, Vector3 } from "three";
 import { Graph } from "./types";
 export interface Point {
   x: number;
@@ -110,4 +110,8 @@ export function getBoundsTransform(
     w === 0 || h === 0 ? 8 : Math.min(hw / (w + padding), hh / (h + padding));
 
   return { x: cx * scale, y: cy * scale, k: scale };
+}
+
+export function mouseToThree(x: number, y: number, w: number, h: number) {
+  return new Vector3((x / w) * 2 - 1, -(y / h) * 2 + 1, 1);
 }

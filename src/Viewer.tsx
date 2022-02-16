@@ -19,6 +19,7 @@ import {
 } from "./utils";
 import { usePanResponder } from "./usePanResponder";
 import { Graph } from "./types";
+import { useVis } from "./context";
 
 const graph: Graph = {
   nodes: [
@@ -76,6 +77,7 @@ export function Viewer({
   initialZoom = 1.0,
 }: ViewerProps) {
   const containerRef = useRef<typeof Canvas>();
+  const { app } = useVis();
 
   const dppx = PixelRatio.get();
 
@@ -225,7 +227,9 @@ export function Viewer({
 
   const onWheel = (evt: WheelEvent) => {};
 
-  const onTap = (evt: GestureResponderEvent) => {};
+  const onTap = ({ nativeEvent }: GestureResponderEvent) => {
+    const el = app.getElementAt(nativeEvent.locationX, nativeEvent.locationY);
+  };
 
   return (
     <View style={styles.container} {...panResponder.panHandlers}>
