@@ -20,43 +20,7 @@ import {
 import { usePanResponder } from "./usePanResponder";
 import { Graph } from "./types";
 import { useVis } from "./context";
-
-const graph: Graph = {
-  nodes: [
-    {
-      id: 0,
-      attributes: { x: 0, y: 0, r: 2, color: "red" },
-    },
-    {
-      id: 1,
-      attributes: { x: 10, y: 10, r: 5, color: "blue" },
-    },
-    {
-      id: 2,
-      attributes: { x: -10, y: 10, r: 3, color: "green" },
-    },
-  ],
-  edges: [
-    {
-      id: 3,
-      source: 0,
-      target: 1,
-      attributes: { color: "black", width: 3 },
-    },
-    {
-      id: 4,
-      source: 1,
-      target: 2,
-      attributes: { color: "black", width: 2 },
-    },
-    {
-      id: 5,
-      source: 2,
-      target: 0,
-      attributes: { color: "black", width: 1 },
-    },
-  ],
-};
+import { useEffect } from "react";
 
 export interface ViewerProps extends ViewProps {
   width?: number;
@@ -67,6 +31,7 @@ export interface ViewerProps extends ViewProps {
   canvasHeight?: number;
   canvasWidth?: number;
   onZoom?: (zoom: number) => void;
+  graph: Graph;
 }
 
 export function Viewer({
@@ -75,6 +40,7 @@ export function Viewer({
   minScale = 0.0001,
   maxScale = 1000.0,
   initialZoom = 1.0,
+  graph,
 }: ViewerProps) {
   const containerRef = useRef<typeof Canvas>();
   const { app } = useVis();
@@ -82,15 +48,17 @@ export function Viewer({
   const dppx = PixelRatio.get();
 
   const { minX, minY, maxX, maxY } = graphBbox(graph);
-  const transform = getBoundsTransform(
-    minX,
-    minY,
-    maxX,
-    maxY,
-    width * dppx,
-    height * dppx,
-    20
-  );
+  const transform = graph.nodes.length
+    ? getBoundsTransform(
+        minX,
+        minY,
+        maxX,
+        maxY,
+        width * dppx,
+        height * dppx,
+        20
+      )
+    : { x: 0, y: 0, k: 1 };
 
   initialZoom = transform.k;
   const top = transform.y;
@@ -229,6 +197,14 @@ export function Viewer({
 
   const onTap = ({ nativeEvent }: GestureResponderEvent) => {
     const el = app.getElementAt(nativeEvent.locationX, nativeEvent.locationY);
+    if (el) {
+      graph.nodes.forEach((n) => {
+        if (n.id === el.id) {
+          n.attributes.color = "cyan";
+        }
+      });
+      app.setGraph(graph);
+    }
   };
 
   return (

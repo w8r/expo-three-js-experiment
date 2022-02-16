@@ -16,7 +16,7 @@ import {
 } from "three";
 // @ts-ignore
 import { Text } from "troika-three-text";
-import { quadtree } from "d3-quadtree";
+import { Quadtree, quadtree } from "d3-quadtree";
 import { Graph, GraphEdge, GraphNode } from "./types";
 
 const FOV = 80;
@@ -62,6 +62,8 @@ export class App {
   private idToEdge = new Map<number, GraphEdge>();
   private nodes: GraphNode[] = [];
   private edges: GraphEdge[] = [];
+  // @ts-ignore;
+  private nodeQ: Quadtree<GraphNode>;
 
   private frameTimer = 0;
   private dppx = 1;
@@ -123,7 +125,9 @@ export class App {
     const idToMesh = this.idToMesh;
     const idToNode = this.idToNode;
 
-    const quadtreeNodes = quadtree<GraphNode>();
+    this.nodeQ = quadtree<GraphNode>()
+      .x((d) => d.attributes.x)
+      .y((d) => d.attributes.y);
     nodes.forEach((node, i) => {
       const {
         id,
@@ -163,6 +167,7 @@ export class App {
       //this.idToText.set(id, text);
       //scene.add(text);
       scene.add(mesh);
+      this.nodeQ.add(node);
     });
 
     const idToEdge = this.idToEdge;
@@ -267,15 +272,9 @@ export class App {
   }
 
   getElementAt(x: number, y: number) {
-    const pos = mouseToThree(
-      x,
-      y,
-      this.width / this.dppx,
-      this.height / this.dppx
-    );
-    const ex = (x - this.x) / this.k;
-    const ey = (y - this.y) / this.k;
-    console.log(x, y, this.x, this.y, this.k, { ex, ey });
+    const ex = (x - this.width / (2 * this.dppx) - this.x) / this.k;
+    const ey = -(y - this.height / (2 * this.dppx) - this.y) / this.k;
+    return this.nodeQ.find(ex, ey, 10);
   }
 
   setView(x: number, y: number, k: number) {
