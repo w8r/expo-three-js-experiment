@@ -37,7 +37,6 @@ export const Canvas = forwardRef(
     const onContextCreate = (gl: ExpoWebGLRenderingContext) => {
       setApp(new App(gl, dppx));
       setGl(gl);
-      // app.init(gl, dppx);
     };
 
     return (

@@ -18,9 +18,9 @@ import {
   getBoundsTransform,
 } from "./utils";
 import { usePanResponder } from "./usePanResponder";
-import { Graph } from "./types";
+import { Graph, GraphNode } from "./types";
 import { useVis } from "./context";
-import { useEffect } from "react";
+import {} from "d3-zoom";
 
 export interface ViewerProps extends ViewProps {
   width?: number;
@@ -32,6 +32,25 @@ export interface ViewerProps extends ViewProps {
   canvasWidth?: number;
   onZoom?: (zoom: number) => void;
   graph: Graph;
+}
+
+interface ViewerState {
+  isMoving: boolean;
+  isScaling: boolean;
+  isDragging: null | GraphNode;
+  initialDistance: number;
+
+  top: number;
+  left: number;
+  zoom: number;
+
+  initialZoom: number;
+  initialLeft: number;
+  initialTop: number;
+  initialX: number;
+  initialY: number;
+  dragOffsetX: number;
+  dragOffsetY: number;
 }
 
 export function Viewer({
@@ -65,9 +84,10 @@ export function Viewer({
   const left = transform.x;
   //this.setView(transform.x, transform.y, transform.k);
 
-  const [state, setState] = useState({
+  const [state, setState] = useState<ViewerState>({
     isMoving: false,
     isScaling: false,
+    isDragging: null,
     initialDistance: 1,
 
     top,
@@ -79,6 +99,8 @@ export function Viewer({
     initialTop: 0,
     initialX: 0,
     initialY: 0,
+    dragOffsetX: 0,
+    dragOffsetY: 0,
   });
 
   let prTargetSelf: number, prTargetOuter: number;
@@ -121,9 +143,22 @@ export function Viewer({
     moveX,
     moveY,
   }: PanResponderGestureState) => {
-    // figure out if we are on the node or not
+    if (!app) return;
+    if (state.isDragging) {
+      const { isDragging, dragOffsetX, dragOffsetY } = state;
+      const { x, y } = app.screenToWorld(moveX, moveY);
+      app.moveNode(isDragging, x - dragOffsetX, y - dragOffsetY);
+    } else if (!state.isMoving) {
+      // figure out if we are on the node or not
+      const el = app.getElementAt(moveX, moveY);
+      if (el) {
+        const pos = app.screenToWorld(moveX, moveY);
+        const dragOffsetX = pos.x - el.attributes.x;
+        const dragOffsetY = pos.y - el.attributes.y;
 
-    if (!state.isMoving) {
+        return setState({ ...state, isDragging: el, dragOffsetX, dragOffsetY });
+      }
+
       setState({
         ...state,
         isMoving: true,
@@ -132,7 +167,7 @@ export function Viewer({
         initialX: x0,
         initialY: y0,
       });
-    } else {
+    } else if (state.isMoving) {
       setState({
         ...state,
 
@@ -182,7 +217,12 @@ export function Viewer({
       onPanResponderRelease: (evt, gestureState) => {
         // The user has released all touches while this view is the
         // responder. This typically means a gesture has succeeded
-        setState({ ...state, isMoving: false, isScaling: false });
+        setState({
+          ...state,
+          isMoving: false,
+          isScaling: false,
+          isDragging: null,
+        });
       },
       onPanResponderTerminate: (evt, gestureState) => {
         // Another component has become the responder, so this gesture

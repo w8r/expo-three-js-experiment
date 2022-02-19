@@ -10,8 +10,8 @@ type Event = GestureResponderEvent;
 type State = PanResponderGestureState;
 
 const defaultCallback = {
-  onStartShouldSetPanResponder: (e: Event, s: State) => true,
-  onMoveShouldSetPanResponder: (e: Event, s: State) => true,
+  onStartShouldSetPanResponder: (evt: Event, state: State) => true,
+  onMoveShouldSetPanResponder: (evt: Event, state: State) => true,
 };
 
 export const usePanResponder = (

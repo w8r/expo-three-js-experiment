@@ -231,8 +231,6 @@ export class App {
 
   selectNode() {}
 
-  getNodeAt(x: number, y: number) {}
-
   moveNode(node: GraphNode, x: number, y: number) {
     node.attributes.x = x;
     node.attributes.y = y;
@@ -251,10 +249,10 @@ export class App {
       const points = getEdgePoints(s, t);
       mesh.geometry.setFromPoints(points);
     });
-    const textMesh = this.idToText.get(node.id);
-    textMesh.position.x = x;
-    textMesh.position.y = y - node.attributes.r;
-    textMesh.sync();
+    // const textMesh = this.idToText.get(node.id);
+    // textMesh.position.x = x;
+    // textMesh.position.y = y - node.attributes.r;
+    // textMesh.sync();
   }
 
   start() {
@@ -272,9 +270,21 @@ export class App {
   }
 
   getElementAt(x: number, y: number) {
-    const ex = (x - this.width / (2 * this.dppx) - this.x) / this.k;
-    const ey = -(y - this.height / (2 * this.dppx) - this.y) / this.k;
-    return this.nodeQ.find(ex, ey, 10);
+    const pos = this.screenToWorld(x, y);
+    const node = this.nodeQ.find(pos.x, pos.y, 10);
+    if (node) {
+      const dx = node.attributes.x - pos.x;
+      const dy = node.attributes.y - pos.y;
+      const r = node.attributes.r;
+      if (dx * dx + dy * dy > r * r) return null;
+    }
+    return node;
+  }
+
+  screenToWorld(sx: number, sy: number) {
+    const x = (sx - this.width / (2 * this.dppx) - this.x) / this.k;
+    const y = -(sy - this.height / (2 * this.dppx) - this.y) / this.k;
+    return { x, y };
   }
 
   setView(x: number, y: number, k: number) {
