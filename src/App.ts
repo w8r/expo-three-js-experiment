@@ -131,11 +131,11 @@ export class App {
     nodes.forEach((node, i) => {
       const {
         id,
-        attributes: { x, y, r, color: rgbColor },
+        attributes: { x, y, r, color: rgbColor, selected },
       } = node;
 
       const material = new MeshBasicMaterial({
-        color: new Color(rgbColor),
+        color: new Color(selected ? 'cyan' : rgbColor),
       });
       const mesh = new Mesh(circle, material);
       mesh.renderOrder = 1;
