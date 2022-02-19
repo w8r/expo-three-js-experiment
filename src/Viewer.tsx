@@ -63,7 +63,6 @@ export function Viewer({
 }: ViewerProps) {
   const containerRef = useRef<typeof Canvas>();
   const { app } = useVis();
-
   const dppx = PixelRatio.get();
 
   const { minX, minY, maxX, maxY } = graphBbox(graph);
@@ -103,9 +102,6 @@ export function Viewer({
     dragOffsetY: 0,
   });
 
-  let prTargetSelf: number, prTargetOuter: number;
-  let dropNextEvt = 0;
-
   const processPinch = (x1: number, y1: number, x2: number, y2: number) => {
     const distance = calcDistance(x1, y1, x2, y2);
     const { x, y } = calcCenter(x1, y1, x2, y2);
@@ -143,7 +139,9 @@ export function Viewer({
     moveX,
     moveY,
   }: PanResponderGestureState) => {
-    if (!app) return;
+    if (!app) {
+      return;
+    }
     if (state.isDragging) {
       const { isDragging, dragOffsetX, dragOffsetY } = state;
       const { x, y } = app.screenToWorld(moveX, moveY);
@@ -185,27 +183,9 @@ export function Viewer({
       onMoveShouldSetPanResponder: (evt, gestureState) => true,
       onMoveShouldSetPanResponderCapture: (evt, gestureState) => false,
 
-      onPanResponderGrant: (evt, gestureState) => {
-        // Set self for filtering events from other PanResponderTargets
-        if (prTargetSelf == null) {
-          if (prTargetOuter == null) prTargetOuter = evt.currentTarget;
-          if (evt.target !== evt.currentTarget) prTargetSelf = evt.target;
-        }
-      },
+      onPanResponderGrant: (evt, gestureState) => {},
       onPanResponderMove: (evt, gestureState) => {
         const touches = evt.nativeEvent.touches;
-        if (dropNextEvt > 0) {
-          dropNextEvt--;
-          return;
-        }
-
-        // HACK: the native event has some glitches with far-off coordinates.
-        // Sort out the worst ones
-        if (Math.abs(gestureState.vx + gestureState.vy) > 6) {
-          dropNextEvt++;
-          return;
-        }
-
         if (touches.length === 2) {
           const [t0, t1] = touches;
           processPinch(t0.pageX, t0.pageY, t1.pageX, t1.pageY);
@@ -224,13 +204,10 @@ export function Viewer({
           isDragging: null,
         });
       },
-      onPanResponderTerminate: (evt, gestureState) => {
-        // Another component has become the responder, so this gesture
-        // should be cancelled
-      },
+      onPanResponderTerminate: (evt, gestureState) => {},
       onShouldBlockNativeResponder: (evt, gestureState) => true,
     },
-    [state]
+    [state, app]
   );
 
   const onWheel = (evt: WheelEvent) => {};
