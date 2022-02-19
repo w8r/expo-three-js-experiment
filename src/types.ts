@@ -1,6 +1,6 @@
 export interface GraphNode {
   id: number;
-  attributes: { x: number; y: number; r: number; color: string };
+  attributes: { x: number; y: number; r: number; color: string; selected: boolean; };
 }
 
 export interface GraphEdge {
