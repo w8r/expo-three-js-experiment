@@ -200,7 +200,7 @@ export function Viewer({
     if (el) {
       graph.nodes.forEach((n) => {
         if (n.id === el.id) {
-          n.attributes.selected = !n.attributes.selected;
+          n.select();
         }
       });
       app.setGraph(graph);
