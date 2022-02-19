@@ -1,5 +1,6 @@
 import React, { FC } from "react";
 import { useEffect } from "react";
+import {Graph} from './types';
 import { useVis, VisProvider } from "./context";
 import { Viewer } from "./Viewer";
 
@@ -7,15 +8,15 @@ const graph1: Graph = {
   nodes: [
     {
       id: 0,
-      attributes: { x: 0, y: 0, r: 2, color: "red" },
+      attributes: { x: 0, y: 0, r: 2, color: "red", selected: false },
     },
     {
       id: 1,
-      attributes: { x: 10, y: 10, r: 5, color: "blue" },
+      attributes: { x: 10, y: 10, r: 5, color: "blue", selected: false },
     },
     {
       id: 2,
-      attributes: { x: -10, y: 10, r: 3, color: "green" },
+      attributes: { x: -10, y: 10, r: 3, color: "green", selected: false },
     },
   ],
   edges: [

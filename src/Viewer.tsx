@@ -200,7 +200,7 @@ export function Viewer({
     if (el) {
       graph.nodes.forEach((n) => {
         if (n.id === el.id) {
-          n.attributes.color = "cyan";
+          n.attributes.selected = !n.attributes.selected;
         }
       });
       app.setGraph(graph);
