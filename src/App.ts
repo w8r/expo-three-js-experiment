@@ -17,7 +17,7 @@ import {
 import { Text } from "troika-three-text";
 import { Quadtree, quadtree } from "d3-quadtree";
 import { Graph, GraphEdge, GraphNode } from "./types";
-import { LineMesh, basicMaterial, dashedMaterial } from "../lib/line-mesh-2d";
+import { LineMesh, basicMaterial, dashedMaterial } from "./line-mesh-2d";
 
 const FOV = 80;
 
