@@ -1,22 +1,16 @@
 import { ExpoWebGLRenderingContext, GLView } from "expo-gl";
 import { Renderer } from "expo-three";
-import { positionThreeCamera, pointOnLine, mouseToThree } from "./utils";
+import { positionThreeCamera, pointOnLine } from "./utils";
 import {
   PerspectiveCamera,
   Scene,
   WebGLRenderer,
   CircleGeometry,
-  BufferGeometry,
-  Line,
-  Vector3,
   Mesh,
   MeshBasicMaterial,
   Color,
-  LineBasicMaterial,
-  ShaderMaterial,
-  DoubleSide,
+  Vector3,
 } from "three";
-import * as THREE from "three";
 
 // @ts-ignore
 import { Text } from "troika-three-text";
@@ -56,6 +50,50 @@ function getEdgePoints(source: GraphNode, target: GraphNode) {
   // ];
 }
 
+function getArrowPoints(
+  source: GraphNode,
+  target: GraphNode,
+  arrowLength: number
+) {
+  const sx = source.attributes.x;
+  const sy = source.attributes.y;
+  const tx = target.attributes.x;
+  const ty = target.attributes.y;
+  const sr = source.attributes.r;
+  const tr = target.attributes.r;
+
+  const d = Math.sqrt(Math.pow(tx - sx, 2) + Math.pow(ty - sy, 2));
+
+  arrowLength = Math.min(d * 0.1, arrowLength / 2);
+  const t1 = sr / d;
+  const t2 = 1 - tr / d;
+
+  const B = pointOnLine(sx, sy, tx, ty, t2);
+  const A = pointOnLine(sx, sy, tx, ty, t1);
+
+  const dir = new Vector3(B.x - A.x, B.y - A.y, 0).normalize();
+
+  const w = arrowLength / 2;
+  const h = arrowLength;
+
+  const vx = -dir.y;
+  const vy = dir.x;
+
+  const v1x = B.x - h * dir.x - w * vx;
+  const v1y = B.y - h * dir.y - w * vy;
+
+  const v2x = B.x - h * dir.x + w * vx;
+  const v2y = B.y - h * dir.y + w * vy;
+
+  return [
+    [v1x, v1y],
+    [B.x, B.y],
+    [v2x, v2y],
+  ];
+}
+
+type Id = number | string;
+
 export class App {
   // TODO: solve later
   // @ts-ignore
@@ -69,12 +107,12 @@ export class App {
   private edgeMeshes: Mesh[] = [];
   private width: number = 0;
   private height: number = 0;
-  private idToMesh = new Map<number, Mesh>();
-  private idToText = new Map<number, Text>();
-  private edgesBySource = new Map<number, GraphEdge[]>();
-  private edgesByTarget = new Map<number, GraphEdge[]>();
-  private idToNode = new Map<number, GraphNode>();
-  private idToEdge = new Map<number, GraphEdge>();
+  private idToMesh = new Map<Id, Mesh>();
+  private idToText = new Map<Id, Text>();
+  private edgesBySource = new Map<Id, GraphEdge[]>();
+  private edgesByTarget = new Map<Id, GraphEdge[]>();
+  private idToNode = new Map<Id, GraphNode>();
+  private idToEdge = new Map<Id, GraphEdge>();
   private nodes: GraphNode[] = [];
   private edges: GraphEdge[] = [];
   // @ts-ignore;
@@ -162,25 +200,24 @@ export class App {
       idToMesh.set(id, mesh);
       idToNode.set(id, node);
 
-      // const text = new Text();
+      if (node.attributes.text) {
+        const text = new Text();
 
-      // text.renderOrder = 2;
-      // // Set properties to configure:
-      // text.text = "Hello world!";
-      // text.fontSize = 2;
-      // text.position.z = 0;
-      // text.position.x = x;
-      // text.position.y = y - r;
-      // text.anchorX = "center";
-      // text.anchorY = "top";
-      // text.color = new Color(0xffffff);
+        text.renderOrder = 2;
+        // // Set properties to configure:
+        text.text = "Hello world!";
+        text.fontSize = 2;
+        text.position.z = 0;
+        text.position.x = x;
+        text.position.y = y - r;
+        text.anchorX = "center";
+        text.anchorY = "top";
+        text.color = new Color(0xffffff);
 
-      // Update the rendering:
-      //text.sync();
-
+        this.idToText.set(id, text);
+        scene.add(text);
+      }
       this.nodeMeshes.push(mesh);
-      //this.idToText.set(id, text);
-      //scene.add(text);
       scene.add(mesh);
       this.nodeQ.add(node);
     });
@@ -224,15 +261,22 @@ export class App {
       this.edgeMeshes.push(mesh);
 
       // arrows
-      //const dir = new Vector3(tx - sx, ty - sy, 0);
-      //const p2 = pointOnLine(sx, sy, tx, ty, t3);
-      //normalize the direction vector (convert to vector of length 1)
-      //dir.normalize();
-      // const origin = new Vector3(p2.x, p2.y, 0);
-      // const hex = 0xffff00;
-      // const arrowHelper = new ArrowHelper(dir, origin, arrowLength, hex);
-      // arrowHelper.renderOrder = 3;
-      // scene.add(arrowHelper);
+      const arrowMaterial = basicMaterial({
+        thickness: (2 * edge.attributes.width) / 3,
+        color: new Color(rgbColor),
+      });
+      const arrowPoints = getArrowPoints(
+        sourceNode,
+        targetNode,
+        targetNode.attributes.r
+      );
+
+      const arrowGeometry = new LineMesh(arrowPoints, {
+        distances: true,
+      });
+      const arrowMesh = new Mesh(arrowGeometry, arrowMaterial);
+      scene.add(arrowMesh);
+      idToMesh.set(id + "arrow", arrowMesh);
     });
 
     this.edgesBySource = edgesBySource;
@@ -263,12 +307,16 @@ export class App {
       const mesh = this.idToMesh.get(edge.id) as Mesh<LineMesh>;
       const points = getEdgePoints(s, t);
 
+      const arrow = this.idToMesh.get(edge.id + "arrow") as Mesh<LineMesh>;
+      const arrowPoints = getArrowPoints(s, t, t.attributes.r);
+      arrow.geometry.update(arrowPoints);
       mesh.geometry.update(points);
     });
-    // const textMesh = this.idToText.get(node.id);
-    // textMesh.position.x = x;
-    // textMesh.position.y = y - node.attributes.r;
-    // textMesh.sync();
+    const textMesh = this.idToText.get(node.id);
+    if (textMesh) {
+      textMesh.position.x = x;
+      textMesh.position.y = y - node.attributes.r;
+    }
   }
 
   start() {
