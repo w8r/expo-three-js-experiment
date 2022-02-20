@@ -10,6 +10,7 @@ import {
   MeshBasicMaterial,
   Color,
   Vector3,
+  Shape,
 } from "three";
 
 // @ts-ignore
@@ -154,7 +155,7 @@ export class App {
 
     camera.position.set(0, 0, 1);
 
-    this.initLasso();
+    //this.initLasso();
 
     renderer.render(scene, camera);
 
@@ -184,6 +185,9 @@ export class App {
 
     this.scene.add(mesh);
     this.lasso = mesh;
+
+    // const polygon = new Shape();
+    // polygon.
   }
 
   setGraph({ nodes, edges }: Graph) {

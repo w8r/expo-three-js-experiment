@@ -198,6 +198,7 @@ export function Viewer({
       onPanResponderRelease: (evt, gestureState) => {
         // The user has released all touches while this view is the
         // responder. This typically means a gesture has succeeded
+        if (state.isMoving) app.setGraph(graph);
         setState({
           ...state,
           isMoving: false,
