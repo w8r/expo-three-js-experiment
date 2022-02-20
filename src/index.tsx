@@ -15,6 +15,8 @@ const Wrapper = ({ width, height }: VisProps) => {
   return <Viewer width={width} height={height} graph={graph} />;
 };
 
+export { VisProvider, Viewer };
+
 export const Vis: FC<VisProps> = (props) => (
   <VisProvider>
     <Wrapper {...props} />

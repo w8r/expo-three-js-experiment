@@ -1,5 +1,5 @@
 import { ZoomTransform } from "d3-zoom";
-import { PerspectiveCamera, Vector3 } from "three";
+import { NumberKeyframeTrack, PerspectiveCamera, Vector3 } from "three";
 import { Graph } from "./types";
 export interface Point {
   x: number;
@@ -114,4 +114,41 @@ export function getBoundsTransform(
 
 export function mouseToThree(x: number, y: number, w: number, h: number) {
   return new Vector3((x / w) * 2 - 1, -(y / h) * 2 + 1, 1);
+}
+
+function scale(transform: Transform, k: number) {
+  return k === transform.k
+    ? transform
+    : { k: k, x: transform.x * k, y: transform.y * k };
+}
+
+function translate(
+  transform: Transform,
+  p0x: number,
+  p0y: number,
+  p1x: number,
+  p1y: number
+) {
+  var x = p0x - p1x * transform.k,
+    y = p0y - p1y * transform.k;
+  return x === transform.x && y === transform.y
+    ? transform
+    : { k: transform.k, x, y };
+}
+
+function invert(transform: Transform, x: number, y: number) {
+  return {
+    x: (x - transform.x) / transform.k,
+    y: (y - transform.y) / transform.k,
+  };
+}
+
+export function zoomAround(
+  transform: Transform,
+  x: number,
+  y: number,
+  zoom: number
+) {
+  const { x: x1, y: y1 } = invert(transform, x, y);
+  return translate(scale(transform, zoom), x, y, x1, y1);
 }

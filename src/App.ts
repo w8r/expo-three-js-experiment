@@ -113,6 +113,7 @@ export class App {
   private edgesByTarget = new Map<Id, GraphEdge[]>();
   private idToNode = new Map<Id, GraphNode>();
   private idToEdge = new Map<Id, GraphEdge>();
+  private lasso?: Mesh;
   private nodes: GraphNode[] = [];
   private edges: GraphEdge[] = [];
   // @ts-ignore;
@@ -153,11 +154,36 @@ export class App {
 
     camera.position.set(0, 0, 1);
 
+    this.initLasso();
+
     renderer.render(scene, camera);
 
     gl.endFrameEXP();
     this.start();
     return this;
+  }
+
+  private initLasso(color = 0xffffff) {
+    const points = [
+      [-20, 0],
+      [0, 20],
+      [20, 0],
+      [0, -20],
+    ];
+    const material = dashedMaterial({
+      thickness: 0.05,
+      color: new Color(color),
+      opacity: 0.5,
+      dashSteps: 100,
+    });
+    //const dashMaterial = dashedMaterial({ thickness: 2 });
+    const geometry = new LineMesh(points, {
+      distances: true,
+    });
+    const mesh = new Mesh(geometry, material);
+
+    this.scene.add(mesh);
+    this.lasso = mesh;
   }
 
   setGraph({ nodes, edges }: Graph) {
@@ -286,6 +312,8 @@ export class App {
 
     this.nodes = nodes;
     this.edges = edges;
+
+    if (this.lasso) this.scene.add(this.lasso);
   }
 
   selectNode() {}

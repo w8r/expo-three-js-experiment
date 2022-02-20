@@ -16,6 +16,7 @@ import {
   clamp,
   bbox as graphBbox,
   getBoundsTransform,
+  zoomAround,
 } from "./utils";
 import { usePanResponder } from "./usePanResponder";
 import { Graph, GraphNode } from "./types";
@@ -40,9 +41,9 @@ interface ViewerState {
   isDragging: null | GraphNode;
   initialDistance: number;
 
-  top: number;
-  left: number;
-  zoom: number;
+  x: number;
+  y: number;
+  k: number;
 
   initialZoom: number;
   initialLeft: number;
@@ -89,9 +90,9 @@ export function Viewer({
     isDragging: null,
     initialDistance: 1,
 
-    top,
-    left,
-    zoom: initialZoom,
+    x: transform.x,
+    y: transform.y,
+    k: initialZoom,
 
     initialZoom: 0,
     initialLeft: 0,
@@ -113,9 +114,9 @@ export function Viewer({
         isScaling: true,
         initialX: x - width / 2,
         initialY: y - height / 2,
-        initialTop: state.top,
-        initialLeft: state.left,
-        initialZoom: state.zoom,
+        initialTop: state.y,
+        initialLeft: state.x,
+        initialZoom: state.k,
         initialDistance: distance,
       });
     } else {
@@ -123,11 +124,11 @@ export function Viewer({
       const dx = x - state.initialX;
       const dy = y - state.initialY;
 
-      const left = (state.initialLeft + dx - x) * delta + x - width / 2;
-      const top = (state.initialTop + dy - y) * delta + y - height / 2;
-      const zoom = clamp(state.initialZoom * delta, minScale, maxScale);
+      const x1 = (state.initialLeft + dx - x) * delta + x - width / 2;
+      const y1 = (state.initialTop + dy - y) * delta + y - height / 2;
+      const k = clamp(state.initialZoom * delta, minScale, maxScale);
 
-      setState({ ...state, zoom, left, top });
+      setState({ ...state, k, x: x1, y: y1 });
     }
   };
 
@@ -139,9 +140,9 @@ export function Viewer({
     moveX,
     moveY,
   }: PanResponderGestureState) => {
-    if (!app) {
-      return;
-    }
+    if (!app) return;
+    // if drawing a lasso, don't move the graph, update the lasso polygon
+
     if (state.isDragging) {
       const { isDragging, dragOffsetX, dragOffsetY } = state;
       const { x, y } = app.screenToWorld(moveX, moveY);
@@ -160,8 +161,8 @@ export function Viewer({
       setState({
         ...state,
         isMoving: true,
-        initialLeft: state.left,
-        initialTop: state.top,
+        initialLeft: state.x,
+        initialTop: state.y,
         initialX: x0,
         initialY: y0,
       });
@@ -169,8 +170,8 @@ export function Viewer({
       setState({
         ...state,
 
-        left: state.left + dx,
-        top: state.top + dy,
+        x: state.x + dx,
+        y: state.y + dy,
       });
     }
   };
@@ -210,7 +211,20 @@ export function Viewer({
     [state, app]
   );
 
-  const onWheel = (evt: WheelEvent) => {};
+  const onWheel = (evt: WheelEvent) => {
+    const { deltaY } = evt;
+    const newZoom = clamp(state.k + deltaY / 100, minScale, maxScale);
+
+    setState({
+      ...state,
+      ...zoomAround(
+        { x: state.x, y: state.y, k: state.k },
+        evt.pageX - width / 2,
+        evt.pageY - height / 2,
+        newZoom
+      ),
+    });
+  };
 
   const onTap = ({ nativeEvent }: GestureResponderEvent) => {
     const el = app.getElementAt(nativeEvent.locationX, nativeEvent.locationY);
@@ -233,7 +247,7 @@ export function Viewer({
           onWheel={onWheel}
           graph={graph}
           dppx={dppx}
-          transform={{ x: state.left, y: state.top, k: state.zoom }}
+          transform={{ x: state.x, y: state.y, k: state.k }}
         />
       </TouchableWithoutFeedback>
     </View>
