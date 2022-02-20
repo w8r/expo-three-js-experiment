@@ -13,11 +13,16 @@ import {
   MeshBasicMaterial,
   Color,
   LineBasicMaterial,
+  ShaderMaterial,
+  DoubleSide,
 } from "three";
+import * as THREE from "three";
+
 // @ts-ignore
 import { Text } from "troika-three-text";
 import { Quadtree, quadtree } from "d3-quadtree";
 import { Graph, GraphEdge, GraphNode } from "./types";
+import { LineMesh, basicMaterial, dashedMaterial } from "../lib/line-mesh-2d";
 
 const FOV = 80;
 
@@ -29,16 +34,26 @@ function getEdgePoints(source: GraphNode, target: GraphNode) {
   const sr = source.attributes.r;
   const tr = target.attributes.r;
 
-  const d = Math.sqrt(Math.pow(tx - sx, 2) + Math.pow(ty - sy, 2));
-  //const arrowLength = d * 0.1;
-  const t1 = sr / d;
-  const t2 = 1 - tr / d;
-  //const t3 = 1 - (tr + arrowLength) / d;
+  return [
+    [sx, sy, 0],
+    [tx, ty, 0],
+  ];
 
-  const p0 = pointOnLine(sx, sy, tx, ty, t1);
-  const p1 = pointOnLine(sx, sy, tx, ty, t2);
+  // special case for the arrows and other stuff
 
-  return [new Vector3(p0.x, p0.y, 0), new Vector3(p1.x, p1.y, 0)];
+  // const d = Math.sqrt(Math.pow(tx - sx, 2) + Math.pow(ty - sy, 2));
+  // //const arrowLength = d * 0.1;
+  // const t1 = sr / d;
+  // const t2 = 1 - tr / d;
+  // //const t3 = 1 - (tr + arrowLength) / d;
+
+  // const p0 = pointOnLine(sx, sy, tx, ty, t1);
+  // const p1 = pointOnLine(sx, sy, tx, ty, t2);
+
+  // return [
+  //   [p0.x, p0.y, 0],
+  //   [p1.x, p1.y, 0],
+  // ];
 }
 
 export class App {
@@ -51,10 +66,10 @@ export class App {
   private scene: Scene = new Scene();
   private camera: PerspectiveCamera = new PerspectiveCamera();
   private nodeMeshes: Mesh[] = [];
-  private edgeMeshes: Line[] = [];
+  private edgeMeshes: Mesh[] = [];
   private width: number = 0;
   private height: number = 0;
-  private idToMesh = new Map<number, Mesh | Line>();
+  private idToMesh = new Map<number, Mesh>();
   private idToText = new Map<number, Text>();
   private edgesBySource = new Map<number, GraphEdge[]>();
   private edgesByTarget = new Map<number, GraphEdge[]>();
@@ -193,20 +208,20 @@ export class App {
       edgeSet.push(edge);
 
       const points = getEdgePoints(sourceNode, targetNode);
-      const geometry = new BufferGeometry().setFromPoints(points);
-
-      const material = new LineBasicMaterial({
+      const material = basicMaterial({
+        thickness: edge.attributes.width,
         color: new Color(rgbColor),
-        linewidth: 10,
       });
-
-      const line = new Line(geometry, material);
-      line.renderOrder = 0;
-      idToMesh.set(id, line);
+      //const dashMaterial = dashedMaterial({ thickness: 2 });
+      const geometry = new LineMesh(points, {
+        distances: true,
+      });
+      const mesh = new Mesh(geometry, material);
+      scene.add(mesh);
+      mesh.renderOrder = 0;
+      idToMesh.set(id, mesh);
       idToEdge.set(id, edge);
-
-      this.edgeMeshes.push(line);
-      scene.add(line);
+      this.edgeMeshes.push(mesh);
 
       // arrows
       //const dir = new Vector3(tx - sx, ty - sy, 0);
@@ -245,9 +260,10 @@ export class App {
     edgeSet?.forEach((edge) => {
       const s = this.idToNode.get(edge.source) as GraphNode;
       const t = this.idToNode.get(edge.target) as GraphNode;
-      const mesh = this.idToMesh.get(edge.id) as Line;
+      const mesh = this.idToMesh.get(edge.id) as Mesh<LineMesh>;
       const points = getEdgePoints(s, t);
-      mesh.geometry.setFromPoints(points);
+
+      mesh.geometry.update(points);
     });
     // const textMesh = this.idToText.get(node.id);
     // textMesh.position.x = x;

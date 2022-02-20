@@ -2614,6 +2614,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"as-number@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "as-number@npm:1.0.0"
+  checksum: dc8d9ac91bbd7fb4e4987ae15e102acbbf78fca39d6e2d30f17fbbc801df9e7cd7f9e9ef63ac439b68f34644b1d1fa5465d8ef1906e39cb9af4ab5d25ac71c73
+  languageName: node
+  linkType: hard
+
 "asap@npm:~2.0.3, asap@npm:~2.0.6":
   version: 2.0.6
   resolution: "asap@npm:2.0.6"
@@ -4113,17 +4120,20 @@ __metadata:
     "@types/react": ~17.0.21
     "@types/react-native": ~0.64.12
     "@types/three": ^0.137.0
+    as-number: ^1.0.0
     d3-quadtree: ^3.0.1
     d3-zoom: ^3.0.0
     expo: ~42.0.0
     expo-gl: ^9.2.0
     expo-status-bar: ~1.0.3
     expo-three: ^5.5.1
+    polyline-normals: ^2.0.2
     react: 17.0.1
     react-dom: 17.0.1
     react-native: 0.63.4
     react-native-web: 0.17.1
     three: ^0.137.5
+    three-line-2d: ^1.1.6
     troika-three-text: ^0.45.0
     typescript: ~4.3.5
   languageName: unknown
@@ -4657,6 +4667,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"gl-vec2@npm:^1.0.0":
+  version: 1.3.0
+  resolution: "gl-vec2@npm:1.3.0"
+  checksum: feaed02ee51c7d3fb69f06033359a78f735260cdbf025270c12ea40aa3c24c98aa72256cbd87687b8ad14958990b3f7bb2207200ca8e4ceed920e5501ffd0ea4
+  languageName: node
+  linkType: hard
+
 "glob-parent@npm:^5.1.2":
   version: 5.1.2
   resolution: "glob-parent@npm:5.1.2"
@@ -4925,7 +4942,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"inherits@npm:2, inherits@npm:2.0.4, inherits@npm:^2.0.3, inherits@npm:~2.0.3":
+"inherits@npm:2, inherits@npm:2.0.4, inherits@npm:^2.0.1, inherits@npm:^2.0.3, inherits@npm:~2.0.3":
   version: 2.0.4
   resolution: "inherits@npm:2.0.4"
   checksum: 4a48a733847879d6cf6691860a6b1e3f0f4754176e4d71494c41f3475553768b10f84b5ce1d40fbd0e34e6bfbb864ee35858ad4dd2cf31e02fc4a154b724d7f1
@@ -6840,6 +6857,24 @@ __metadata:
   languageName: node
   linkType: hard
 
+"polyline-miter-util@npm:^1.0.1":
+  version: 1.0.1
+  resolution: "polyline-miter-util@npm:1.0.1"
+  dependencies:
+    gl-vec2: ^1.0.0
+  checksum: ce6cb870419a4210ba1ac6edd8bbb3172525be4758173ad8053303e211479de2d00d20f554519a578e7a86d6cc21f21ae2396b15aef713546f9af463b19aee17
+  languageName: node
+  linkType: hard
+
+"polyline-normals@npm:^2.0.0, polyline-normals@npm:^2.0.2":
+  version: 2.0.2
+  resolution: "polyline-normals@npm:2.0.2"
+  dependencies:
+    polyline-miter-util: ^1.0.1
+  checksum: 0568260bcde27d3593b34624baffd2c0612e80e471c864c078028c2a2a39a5a16d885e3d17d05eab8a73118a73884a08738f0a6d97978cbaeca5ff67ebd0fbda
+  languageName: node
+  linkType: hard
+
 "posix-character-classes@npm:^0.1.0":
   version: 0.1.1
   resolution: "posix-character-classes@npm:0.1.1"
@@ -8080,6 +8115,17 @@ __metadata:
   dependencies:
     any-promise: ^1.0.0
   checksum: 84e1b804bfec49f3531215f17b4a6e50fd4397b5f7c1bccc427b9c656e1ecfb13ea79d899930184f78bc2f57285c54d9a50a590c8868f4f0cef5c1d9f898b05e
+  languageName: node
+  linkType: hard
+
+"three-line-2d@npm:^1.1.6":
+  version: 1.1.6
+  resolution: "three-line-2d@npm:1.1.6"
+  dependencies:
+    inherits: ^2.0.1
+    object-assign: ^4.0.1
+    polyline-normals: ^2.0.0
+  checksum: 34e863dc862cf3a97ce95ca110132d00a283bbfe4e28ff1bd1f60a6df16d525551116384d842ed3434ba5ee129fdc432a291cbddc2427c6bb1390a45c297383b
   languageName: node
   linkType: hard
 

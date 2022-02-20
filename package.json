@@ -12,17 +12,20 @@
   "dependencies": {
     "@types/d3-quadtree": "^3.0.2",
     "@types/d3-zoom": "^3.0.1",
+    "as-number": "^1.0.0",
     "d3-quadtree": "^3.0.1",
     "d3-zoom": "^3.0.0",
     "expo": "~42.0.0",
     "expo-gl": "^9.2.0",
     "expo-status-bar": "~1.0.3",
     "expo-three": "^5.5.1",
+    "polyline-normals": "^2.0.2",
     "react": "17.0.1",
     "react-dom": "17.0.1",
     "react-native": "0.63.4",
     "react-native-web": "0.17.1",
     "three": "^0.137.5",
+    "three-line-2d": "^1.1.6",
     "troika-three-text": "^0.45.0"
   },
   "devDependencies": {
