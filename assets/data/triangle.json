@@ -2,7 +2,7 @@
   "nodes": [
     {
       "id": 0,
-      "attributes": { "x": 0, "y": 0, "r": 2, "color": "red" }
+      "attributes": { "x": 0, "y": 0, "r": 2, "color": "red", "text": "Alex" }
     },
     {
       "id": 1,

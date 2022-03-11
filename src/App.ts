@@ -1,5 +1,5 @@
 import { ExpoWebGLRenderingContext, GLView } from "expo-gl";
-import { Renderer } from "expo-three";
+import { Renderer, TextureLoader } from "expo-three";
 import { positionThreeCamera, pointOnLine } from "./utils";
 import {
   PerspectiveCamera,
@@ -10,7 +10,7 @@ import {
   MeshBasicMaterial,
   Color,
   Vector3,
-  Shape,
+  Texture,
 } from "three";
 
 // @ts-ignore
@@ -19,7 +19,11 @@ import { Quadtree, quadtree } from "d3-quadtree";
 import { Graph, GraphEdge, GraphNode } from "./types";
 import { LineMesh, basicMaterial, dashedMaterial } from "./line-mesh-2d";
 
+import { TextMesh } from "./TextMesh";
+
 const FOV = 80;
+
+const textSize = new Vector3();
 
 function getEdgePoints(source: GraphNode, target: GraphNode) {
   const sx = source.attributes.x;
@@ -109,7 +113,7 @@ export class App {
   private width: number = 0;
   private height: number = 0;
   private idToMesh = new Map<Id, Mesh>();
-  private idToText = new Map<Id, Text>();
+  private idToText = new Map<Id, TextMesh>();
   private edgesBySource = new Map<Id, GraphEdge[]>();
   private edgesByTarget = new Map<Id, GraphEdge[]>();
   private idToNode = new Map<Id, GraphNode>();
@@ -130,7 +134,7 @@ export class App {
   constructor(
     gl: ExpoWebGLRenderingContext,
     dppx: number,
-    sceneColor = 0x10505b
+    sceneColor = 0xffffff
   ) {
     this.gl = gl;
     this.dppx = dppx;
@@ -161,6 +165,7 @@ export class App {
 
     gl.endFrameEXP();
     this.start();
+
     return this;
   }
 
@@ -204,6 +209,9 @@ export class App {
     this.idToEdge.clear();
 
     const circle = new CircleGeometry(1, 32);
+    const textMaterial = new MeshBasicMaterial({
+      color: "#000000",
+    });
 
     const idToMesh = this.idToMesh;
     const idToNode = this.idToNode;
@@ -231,21 +239,19 @@ export class App {
       idToNode.set(id, node);
 
       if (node.attributes.text) {
-        const text = new Text();
-
-        text.renderOrder = 2;
-        // // Set properties to configure:
-        text.text = "Hello world!";
-        text.fontSize = 2;
-        text.position.z = 0;
-        text.position.x = x;
-        text.position.y = y - r;
-        text.anchorX = "center";
-        text.anchorY = "top";
-        text.color = new Color(0xffffff);
-
-        this.idToText.set(id, text);
-        scene.add(text);
+        // const text = new Text();
+        // text.renderOrder = 2;
+        // // // Set properties to configure:
+        // text.text = node.attributes.text;
+        // text.fontSize = 2;
+        // text.position.z = 0;
+        // text.position.x = x;
+        // text.position.y = y - r;
+        // text.anchorX = "center";
+        // text.anchorY = "top";
+        // text.color = new Color(0x000000);
+        // this.idToText.set(id, text);
+        //scene.add(text);
       }
       this.nodeMeshes.push(mesh);
       scene.add(mesh);
@@ -317,6 +323,28 @@ export class App {
     this.nodes = nodes;
     this.edges = edges;
 
+    nodes.forEach((node) => {
+      if (node.attributes.text) {
+        const mesh = new TextMesh();
+        mesh.material = textMaterial;
+        const size = node.attributes.r * 0.5;
+        mesh.update({
+          text: node.attributes.text,
+          height: 0,
+          size,
+        });
+
+        mesh.geometry.boundingBox?.getSize(textSize);
+
+        mesh.renderOrder = 2;
+        mesh.position.x = node.attributes.x - textSize.x / 2;
+        mesh.position.y =
+          node.attributes.y - node.attributes.r - textSize.y * 1.5;
+        scene.add(mesh);
+        this.idToText.set(node.id, mesh);
+      }
+    });
+
     if (this.lasso) this.scene.add(this.lasso);
   }
 
@@ -346,8 +374,9 @@ export class App {
     });
     const textMesh = this.idToText.get(node.id);
     if (textMesh) {
-      textMesh.position.x = x;
-      textMesh.position.y = y - node.attributes.r;
+      textMesh.geometry.boundingBox?.getSize(textSize);
+      textMesh.position.x = x - textSize.x / 2;
+      textMesh.position.y = y - node.attributes.r - textSize.y * 1.5;
     }
   }
 
